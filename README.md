@@ -33,20 +33,15 @@ In order to help resellers and brands to identify what makes a shoe excel in the
 #### Evaluation Metrics
 
 The main evaluation metric for clustering will be measures of separation in groups and between groups. The measure of within and between group variance of the images are some common ways to achieve this. For classification tasks, it is important to be robust against unbalanced groups, which the problem existent in our dataset when classifying brands. Therefore, we will employ an evaluation metric that robust against imbalanced classes. The F1 score is defined as the harmonic mean of precision and recall:
-
-<center>
 ![f1](misc/f1.gif)
-</center>
+
 
 Where _precision_ and _recall_ is defined as:
 
-<center>
 ![precision](misc/precision.gif)
-</center>
 
-<center>
 ![recall](misc/recall.gif)
-</center>
+
 
 #### Project Design
 
