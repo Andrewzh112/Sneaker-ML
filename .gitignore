@@ -1,10 +1,10 @@
 .ipynb_checkpoints/
-excluded/
-goat/
-stockx/
 scraper.ipynb
 instructions/
-non-hype/
-flight_club/
-Data Preprocessing and EDA.ipynb
 Project Roadmap.docx
+data/
+report/
+__pycache__/
+non_hyped_info_df.csv
+hyped_info_df.csv
+Image Clustering/

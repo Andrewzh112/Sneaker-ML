@@ -43,7 +43,7 @@ Where _precision_ and _recall_ is defined as:
 ![recall](misc/recall.gif)
 
 
-#### Project Design
+#### Project Procedure
 
 1. Gather shoe images from **Goat**, **Flight Club**, **StockX** and **Amazon**.
 2. Preprocess image data by first manually removing images that do not belong to the dataset at all (not shoes) or shoes that are oriented very differently from the rest (shoes pointing upwards or images showing a pair of shoes instead of a single shoe). Next, we can pad all the images that are not of the same size to the same size to make the subsequent training jobs easier.
