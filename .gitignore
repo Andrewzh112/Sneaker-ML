@@ -8,3 +8,4 @@ __pycache__/
 non_hyped_info_df.csv
 hyped_info_df.csv
 Image Clustering/
+Classification/
