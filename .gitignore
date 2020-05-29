@@ -7,5 +7,5 @@ report/
 __pycache__/
 non_hyped_info_df.csv
 hyped_info_df.csv
-Image Clustering/
-Classification/
+brand_models/
+hyped_models/
