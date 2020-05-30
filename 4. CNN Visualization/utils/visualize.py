@@ -23,7 +23,7 @@ def visualize(img, cam):
     """
 
     _, _, H, W = img.shape
-    cam = F.interpolate(cam, size=(H, W), mode='bilinear', align_corners=False)
+    cam = F.interpolate(cam, size=(H, W), mode="bilinear", align_corners=False)
     cam = 255 * cam.squeeze()
     heatmap = cv2.applyColorMap(np.uint8(cam), cv2.COLORMAP_JET)
     heatmap = torch.from_numpy(heatmap.transpose(2, 0, 1))

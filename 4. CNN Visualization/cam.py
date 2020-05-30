@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from statistics import mode, mean
 
 
-class SaveValues():
+class SaveValues:
     def __init__(self, m):
         # register a hook to save values of activations and gradients
         self.activations = None
@@ -59,8 +59,7 @@ class CAM(object):
             print("predicted class ids {}\t probability {}".format(idx, prob))
 
         # cam can be calculated from the weights of linear layer and activations
-        weight_fc = list(
-            self.model._modules.get('fc').parameters())[0].to('cpu').data
+        weight_fc = list(self.model._modules.get("fc").parameters())[0].to("cpu").data
 
         cam = self.getCAM(self.values, weight_fc, idx)
 
@@ -70,13 +69,13 @@ class CAM(object):
         return self.forward(x)
 
     def getCAM(self, values, weight_fc, idx):
-        '''
+        """
         values: the activations and gradients of target_layer
             activations: feature map before GAP.  shape => (1, C, H, W)
         weight_fc: the weight of fully connected layer.  shape => (num_classes, C)
         idx: predicted class id
         cam: class activation map.  shape => (1, num_classes, H, W)
-        '''
+        """
 
         cam = F.conv2d(values.activations, weight=weight_fc[:, :, None, None])
         _, _, h, w = cam.shape
@@ -132,13 +131,13 @@ class GradCAM(CAM):
         return self.forward(x)
 
     def getGradCAM(self, values, score, idx):
-        '''
+        """
         values: the activations and gradients of target_layer
             activations: feature map before GAP.  shape => (1, C, H, W)
         score: the output of the model before softmax
         idx: predicted class id
         cam: class activation map.  shape=> (1, 1, H, W)
-        '''
+        """
 
         self.model.zero_grad()
 
@@ -199,13 +198,13 @@ class GradCAMpp(CAM):
         return self.forward(x)
 
     def getGradCAMpp(self, values, score, idx):
-        '''
+        """
         values: the activations and gradients of target_layer
             activations: feature map before GAP.  shape => (1, C, H, W)
         score: the output of the model before softmax. shape => (1, n_classes)
         idx: predicted class id
         cam: class activation map.  shape=> (1, 1, H, W)
-        '''
+        """
 
         self.model.zero_grad()
 
@@ -221,7 +220,8 @@ class GradCAMpp(CAM):
         ag = activations * gradients.pow(3)
         denominator += ag.view(n, c, -1).sum(-1, keepdim=True).view(n, c, 1, 1)
         denominator = torch.where(
-            denominator != 0.0, denominator, torch.ones_like(denominator))
+            denominator != 0.0, denominator, torch.ones_like(denominator)
+        )
         alpha = numerator / (denominator + 1e-7)
 
         relu_grad = F.relu(score[0, idx].exp() * gradients)
@@ -294,15 +294,14 @@ class SmoothGradCAMpp(CAM):
             numerator = gradients.pow(2)
             denominator = 2 * gradients.pow(2)
             ag = activations * gradients.pow(3)
-            denominator += \
-                ag.view(n, c, -1).sum(-1, keepdim=True).view(n, c, 1, 1)
+            denominator += ag.view(n, c, -1).sum(-1, keepdim=True).view(n, c, 1, 1)
             denominator = torch.where(
-                denominator != 0.0, denominator, torch.ones_like(denominator))
+                denominator != 0.0, denominator, torch.ones_like(denominator)
+            )
             alpha = numerator / (denominator + 1e-7)
 
             relu_grad = F.relu(score[0, idx].exp() * gradients)
-            weights = \
-                (alpha * relu_grad).view(n, c, -1).sum(-1).view(n, c, 1, 1)
+            weights = (alpha * relu_grad).view(n, c, -1).sum(-1).view(n, c, 1, 1)
 
             # shape => (1, 1, H', W')
             cam = (weights * activations).sum(1, keepdim=True)
@@ -364,12 +363,11 @@ class ScoreCAM(CAM):
             # # calculate the derivate of probabilities, not that of scores
             # prob[0, idx].backward(retain_graph=True)
 
-            self.activations = self.values.activations.to('cpu').clone()
+            self.activations = self.values.activations.to("cpu").clone()
             # put activation maps through relu activation
             # because the values are not normalized with eq.(1) without relu.
             self.activations = F.relu(self.activations)
-            self.activations = F.interpolate(
-                self.activations, (H, W), mode='bilinear')
+            self.activations = F.interpolate(self.activations, (H, W), mode="bilinear")
             _, C, _, _ = self.activations.shape
 
             # normalization
@@ -378,7 +376,7 @@ class ScoreCAM(CAM):
             act_max, _ = self.activations.view(1, C, -1).max(dim=2)
             act_max = act_max.view(1, C, 1, 1)
             denominator = torch.where(
-                (act_max - act_min) != 0., act_max - act_min, torch.tensor(1.)
+                (act_max - act_min) != 0.0, act_max - act_min, torch.tensor(1.0)
             )
 
             self.activations = self.activations / denominator
@@ -386,11 +384,11 @@ class ScoreCAM(CAM):
             # generate masked images and calculate class probabilities
             probs = []
             for i in range(0, C, self.n_batch):
-                mask = self.activations[:, i:i+self.n_batch].transpose(0, 1)
+                mask = self.activations[:, i : i + self.n_batch].transpose(0, 1)
                 mask = mask.to(device)
                 masked_x = x * mask
                 score = self.model(masked_x)
-                probs.append(F.softmax(score, dim=1)[:, idx].to('cpu').data)
+                probs.append(F.softmax(score, dim=1)[:, idx].to("cpu").data)
 
             probs = torch.stack(probs)
             weights = probs.view(1, C, 1, 1)
