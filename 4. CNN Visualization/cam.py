@@ -1,3 +1,5 @@
+# cloned from https://github.com/yiskw713/ScoreCAM
+
 import torch
 import torch.nn.functional as F
 

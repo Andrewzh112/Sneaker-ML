@@ -4,6 +4,8 @@ import numpy as np
 
 
 def unique_shoelists(shoenames):
+    """helper function to group similar named shoes"""
+    
     shoe2shoes = []
     for i, shoe in enumerate(shoenames):
         new_shoes = [shoe]
@@ -23,6 +25,8 @@ def unique_shoelists(shoenames):
 
 
 def dedupe(shoe2shoes):
+    """take out duplicated shoe names"""
+    
     seen = set()
     shoes_fin = []
     for shoelist in shoe2shoes:
@@ -34,6 +38,8 @@ def dedupe(shoe2shoes):
 
 
 def train_test_names(list_names, test_size=0.1, seed=0):
+    """Get the final names of the train and test split of images"""
+    
     np.random.seed(seed)
     train, test = [], []
 

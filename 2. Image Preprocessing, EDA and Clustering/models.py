@@ -84,6 +84,8 @@ class kmeans(KMeans):
             self.km_results[k]["inertia"] = kms.inertia_
 
     def draw_elbow(self):
+        """Draws elbow for given kmeans range"""
+        
         SSE = []
         for k in self.k_range:
             SSE.append(self.km_results[k]["inertia"])
