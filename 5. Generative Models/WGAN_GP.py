@@ -1,5 +1,6 @@
 # credit to https://github.com/eriklindernoren/Keras-GAN/blob/master/wgan_gp/wgan_gp.py
 # code modified for 224 x 224 x 3 input (imagenet specifications). Changed generator and critic structure
+# added FID
 
 from __future__ import print_function, division
 
@@ -16,10 +17,15 @@ from tensorflow.python.keras.models import load_model
 from tensorflow.keras.optimizers import Adam, RMSprop
 import keras.backend as K
 
+from metrics import calculate_fid
+from keras.applications.inception_v3 import InceptionV3
+from keras.applications.inception_v3 import preprocess_input
+
 import matplotlib.pyplot as plt
 
 import sys
 from glob import glob
+import os
 
 from PIL import Image
 from skimage.util import montage
@@ -205,9 +211,10 @@ class WGANGP():
 
     def train(self, epochs, batch_size, sample_interval=50):
         # load data
+        inception = InceptionV3(include_top=False, pooling='avg', input_shape=(224,224,3))
         X_train = [np.asarray(Image.open(img)) for img in glob(os.path.join('all_hyped','**'))]
         X_train = np.stack(X_train)/ 127.5 - 1.0
-
+        fid_distances = []
         # Adversarial ground truths
         valid = -np.ones((batch_size, 1)) # can try soft labels here as suggested by some papers
         fake =  np.ones((batch_size, 1))
@@ -231,13 +238,26 @@ class WGANGP():
 
             g_loss = self.generator_model.train_on_batch(noise, valid)
 
-            # Plot the progress
+            # Progress
             print ("%d [D loss: %f] [G loss: %f]" % (epoch, d_loss[0], g_loss))
 
-            # If at save interval => save generated image samples
+            # If at save interval => save generated/save samples
             if epoch % sample_interval == 0:
                 self.sample_images(epoch)
 
+            # get FID for every 100 epochs
+            if epoch % 100 == 0:
+                random_indx = np.random.choice(X_train.shape[0],5)
+                idx = np.random.choice(X_train.shape[0],5)
+                random_sample = np.take(X_train,idx,axis=0)
+                noise = np.random.normal(0, 1, (5, self.latent_dim))
+                gen_imgs = self.generator.predict(noise)
+                fid = calculate_fid(inception,random_sample,gen_imgs)
+                print(f'The Frechet Inception Distance is {fid}')
+                fid_distances.append(fid)
+        return fid_distances
+
+    
     def sample_images(self, epoch):
         r, c = 5, 5
         noise = np.random.normal(0, 1, (r * c, self.latent_dim))
@@ -250,4 +270,4 @@ class WGANGP():
         plt.imshow(gan_montage)
         plt.axis('off')
         gan_montage = Image.fromarray(gan_montage)
-        gan_montage.save(f'/content/outputs/montage{epoch}.png')
+        gan_montage.save(f'/content/output/montage{epoch}.png')
